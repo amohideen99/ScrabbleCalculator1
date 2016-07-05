@@ -40,12 +40,22 @@
             android:textColorHint="#ffff25e6"
             android:textSize="35dp" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_below="@id/editText"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="10dip"
+            android:minHeight="10dip"
+            android:progress="0" />
+
 
         <TextView
             android:id="@+id/combos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/editText"
+            android:layout_below="@id/progressBar"
             android:layout_centerHorizontal="true"
             android:text=""
             android:textSize="10dp" />

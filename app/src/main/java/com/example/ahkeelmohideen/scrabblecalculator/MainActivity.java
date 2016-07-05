@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.textservice.SentenceSuggestionsInfo;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
     EditText field;
     char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     int[] points = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+    ProgressBar progressBar;
 
 
     @Override
@@ -37,13 +39,18 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
         field = (EditText) findViewById(R.id.editText);
         out = (TextView) findViewById(R.id.textview2);
         combos = (TextView) findViewById(R.id.combos);
-       // ViewGroup vg = findViewById (R.id.re);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setMax(235887);
+        progressBar.setVisibility(View.GONE);
+        // ViewGroup vg = findViewById (R.id.re);
 
 
         field.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId,
                                           KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_GO) {
+
+                    progressBar.setVisibility(View.VISIBLE);
 
                     InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                     inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
@@ -120,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
 
     public void findCombos(String word) {
 
-                           //set Progress Bar Visible
+        //set Progress Bar Visible
 
         char[] splitWord = word.toCharArray();
         String combos = "";
@@ -173,7 +180,9 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
 
     }
 
-    private class LongOperation extends AsyncTask<String, Void, String> {
+    class LongOperation extends AsyncTask<String, Integer, String> {
+
+        Integer count = 0;
 
         @Override
         protected String doInBackground(String... params) {
@@ -184,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
             Boolean curLine = true;
             String line = "";
 
+
             try {
                 BufferedReader reader;
                 AssetManager assetManager = getAssets();
@@ -193,6 +203,9 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
                 reader = new BufferedReader(new InputStreamReader(stream));
 
                 while ((line = reader.readLine()) != null) {
+
+                    count++;
+                    publishProgress(count);
 
                     line = line.replaceAll("\\s+", "");
 
@@ -221,20 +234,22 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
         @Override
         protected void onPostExecute(String result) {
             TextView txt = (TextView) findViewById(R.id.combos);
-            txt.setText(result); // txt.setText(result);
-            // might want to change "executed" for the returned string passed
-            // into onPostExecute() but that is upto you
+            progressBar.setVisibility(View.GONE);
+            txt.setText(result);
+
         }
 
         @Override
         protected void onPreExecute() {
 
-            TextView txt = (TextView) findViewById(R.id.combos);
-            txt.setText("Loading...");
+            progressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {}
+        protected void onProgressUpdate(Integer... values) {
+
+            progressBar.setProgress(values[0]);
+        }
     }
 }
 
