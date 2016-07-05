@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/editText"
             android:layout_centerHorizontal="true"
-            android:text="Loading..."
+            android:text=""
             android:textSize="10dp" />
 
 

@@ -3,10 +3,10 @@ package com.example.ahkeelmohideen.scrabblecalculator;
 
 import android.content.res.AssetManager;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.textservice.SentenceSuggestionsInfo;
@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity implements SpellCheckerSession.SpellCheckerSessionListener {
     TextView out;
-    TextView comboOut;
+    TextView combos;
     EditText field;
     char[] letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     int[] points = {1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
         setContentView(R.layout.activity_main);
         field = (EditText) findViewById(R.id.editText);
         out = (TextView) findViewById(R.id.textview2);
-        comboOut = (TextView) findViewById(R.id.combos);
+        combos = (TextView) findViewById(R.id.combos);
+       // ViewGroup vg = findViewById (R.id.re);
+
 
         field.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId,
@@ -56,9 +58,8 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
                         out.setText("Not a Word!");
                         out.setTextColor(Color.RED);
                     }
-                    comboOut.setText("Loing...");
 
-                    findCombos(enteredWord);
+                    new LongOperation().execute(enteredWord);
 
                     return true;
                 }
@@ -171,4 +172,69 @@ public class MainActivity extends AppCompatActivity implements SpellCheckerSessi
     public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] results) {
 
     }
+
+    private class LongOperation extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            //set Progress Bar Visible
+
+            char[] splitWord = params[0].toCharArray();
+            String combos = "";
+            Boolean curLine = true;
+            String line = "";
+
+            try {
+                BufferedReader reader;
+                AssetManager assetManager = getAssets();
+                InputStream stream;
+
+                stream = assetManager.open("web2.txt");
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                while ((line = reader.readLine()) != null) {
+
+                    line = line.replaceAll("\\s+", "");
+
+                    if (line.length() < 8) {
+
+                        for (int i = 0; i < splitWord.length; i++) {
+
+                            if (!line.contains("" + splitWord[i]))
+                                curLine = false;
+                        }
+
+                        if (curLine) {
+                            combos += " " + line;
+                        }
+                    }
+                    curLine = true;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return combos;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            TextView txt = (TextView) findViewById(R.id.combos);
+            txt.setText(result); // txt.setText(result);
+            // might want to change "executed" for the returned string passed
+            // into onPostExecute() but that is upto you
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+            TextView txt = (TextView) findViewById(R.id.combos);
+            txt.setText("Loading...");
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
+    }
 }
+
